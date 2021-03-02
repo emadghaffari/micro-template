@@ -1,0 +1,6 @@
+config.yaml
+auth
+vendor/
+logs/*
+!logs/README.md
+tmp
