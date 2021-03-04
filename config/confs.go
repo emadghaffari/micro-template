@@ -27,6 +27,7 @@ type global struct {
 	Service service
 	Jaeger  jaeger
 	Log     loggingConfig
+	ETCD    etcd
 }
 
 // Service details
@@ -49,4 +50,8 @@ type jaeger struct {
 type loggingConfig struct {
 	DisableColors    bool `json:"disable_colors" yaml:"log.disableColors"`
 	QuoteEmptyFields bool `json:"quote_empty_fields" yaml:"log.quoteEmptyFields"`
+}
+
+type etcd struct {
+	Endpoints []string `json:"endpoints" yaml:"etcd.endpoints"`
 }
