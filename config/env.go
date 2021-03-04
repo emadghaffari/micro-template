@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"micro/pkg/logger"
 	"os"
@@ -60,8 +59,8 @@ func file(path string) error {
 	}
 
 	// FIXME DELETE the comments
-	b, _ := json.Marshal(Global)
-	fmt.Println(string(b))
+	// b, _ := json.Marshal(Global)
+	// fmt.Println(string(b))
 
 	return nil
 }
