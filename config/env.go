@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"micro/pkg/logger"
 	"os"
@@ -9,23 +10,19 @@ import (
 	"go.uber.org/zap"
 )
 
-// LoadGlobalConfiguration returns configs
-func LoadGlobalConfiguration(path string) error {
+// Load returns configs
+func Load(path string) error {
 
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		if err := localEnvironment(path); err != nil {
+		if err := file(path); err != nil {
 			return err
 		}
-	}
-
-	// READ FROM PRODUCTION CONFIG MANAGER
-	if viper.GetString("environment") == "production" {
 	}
 
 	return nil
 }
 
-func localEnvironment(path string) error {
+func file(path string) error {
 	log := logger.GetZapLogger(false)
 
 	// name of config file (without extension)
@@ -37,14 +34,14 @@ func localEnvironment(path string) error {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			logger.Prepare(log).
 				Append(zap.Any("error", fmt.Sprintf("Config file not found; ignore error if desired: %s", err))).
-				Level(zap.PanicLevel).
+				Level(zap.ErrorLevel).
 				Development().
 				Commit("env")
 		} else {
 			// Config file was found but another error was produced
 			logger.Prepare(log).
 				Append(zap.Any("error", fmt.Sprintf("Config file was found but another error was produced: %s", err))).
-				Level(zap.PanicLevel).
+				Level(zap.ErrorLevel).
 				Development().
 				Commit("env")
 		}
@@ -55,12 +52,16 @@ func localEnvironment(path string) error {
 		// Config file can not unmarshal to struct
 		logger.Prepare(log).
 			Append(zap.Any("error", fmt.Sprintf("Config file can not unmarshal to struct: %s", err))).
-			Level(zap.PanicLevel).
+			Level(zap.ErrorLevel).
 			Development().
 			Commit("env")
 
 		return err
 	}
+
+	// FIXME DELETE the comments
+	b, _ := json.Marshal(Global)
+	fmt.Println(string(b))
 
 	return nil
 }
