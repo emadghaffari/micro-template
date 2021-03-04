@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"micro/config"
+	"micro/database/etcd"
 	zapLogger "micro/pkg/logger"
 	pb "micro/proto"
 	"micro/service"
@@ -17,6 +18,7 @@ import (
 	group "github.com/oklog/oklog/pkg/group"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/spf13/viper"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
@@ -31,6 +33,8 @@ var logger *zap.Logger
 
 // StartApplication func
 func StartApplication() {
+	fmt.Println("--------------------------------")
+
 	// if go code crashed we get error and line
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
@@ -50,36 +54,52 @@ func StartApplication() {
 	}
 	defer closer.Close()
 
+	if viper.GetString("environment") == "production" {
+		fmt.Printf("etcd storage loaded successfully \n")
+		if err := etcd.Storage.Connect(); err != nil {
+			return
+		}
+		defer etcd.Storage.GetClient().Close()
+	}
+
 	g := createService()
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
 
+	fmt.Println("--------------------------------")
 	if err := g.Run(); err != nil {
-		zapLogger.Prepare(logger).Development().Level(zap.PanicLevel).Commit("Error in server run")
+		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit("server stopped")
 	}
 }
 
 func initLogger() {
+	defer fmt.Printf("zap logger is available \n")
+	zapLogger.SetLogPath("logs")
 	logger = zapLogger.GetZapLogger(false)
 }
 
 func initConfigs() error {
+	defer fmt.Printf("configs loaded from file successfully \n")
+
 	// Current working directory
 	dir, err := os.Getwd()
 	if err != nil {
-		zapLogger.Prepare(logger).Development().Level(zap.PanicLevel).Commit("init configs")
+		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit("init configs")
 	}
+
 	// read from file
-	return config.LoadGlobalConfiguration(dir + "/config.yaml")
+	return config.Load(dir + "/config.yaml")
 }
 
 func initGRPCHandler(g *group.Group) {
+	defer fmt.Printf("grpc connected port:%s \n", config.Global.GRPC.Port)
+
 	options := defaultGRPCOptions(logger, tracer)
 	// Add your GRPC options here
 
 	lis, err := net.Listen("tcp", config.Global.GRPC.Port)
 	if err != nil {
-		zapLogger.Prepare(logger).Development().Level(zap.PanicLevel).Commit(err.Error())
+		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit(err.Error())
 	}
 
 	g.Add(func() error {
@@ -96,6 +116,8 @@ func initGRPCHandler(g *group.Group) {
 }
 
 func initMetricsEndpoint(g *group.Group) {
+	defer fmt.Printf("metrics started port:%s \n", config.Global.HTTP.Port)
+
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
 	debugListener, err := net.Listen("tcp", config.Global.HTTP.Port)
 	if err != nil {
@@ -125,6 +147,7 @@ func initCancelInterrupt(g *group.Group) {
 }
 
 func initJaeger() (io.Closer, error) {
+	defer fmt.Printf("Jaeger loaded successfully \n")
 	// Sample configuration for testing. Use constant sampling to sample every trace
 	// and enable LogSpan to log every span via configured Logger.
 	cfg := jaegercfg.Configuration{
