@@ -21,7 +21,8 @@ var (
 type Store interface {
 	Connect() error
 	GetClient() *client.Client
-	WatchKey(ctx context.Context, key string, options ...client.OpOption)
+	// WatchKey(ctx context.Context, key string, options ...client.OpOption)
+	WatchKey(ctx context.Context, key string, callBack func(*client.Event), options ...client.OpOption)
 	Put(ctx context.Context, key string, value interface{}) error
 }
 
@@ -55,13 +56,13 @@ func (e *etcd) GetClient() *client.Client {
 	return e.cli
 }
 
-func (e *etcd) WatchKey(ctx context.Context, key string, options ...client.OpOption) {
+func (e *etcd) WatchKey(ctx context.Context, key string, callBack func(*client.Event), options ...client.OpOption) {
 	rch := e.cli.Watch(ctx, key, options...)
 
 	go func(rch client.WatchChan) {
 		for wresp := range rch {
 			for _, ev := range wresp.Events {
-				fmt.Printf("%s %q : %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				callBack(ev)
 			}
 		}
 	}(rch)
