@@ -1,0 +1,45 @@
+# environment: "development"
+environment: "production"
+
+service:
+  name: "template"
+
+jaeger:
+  hostPort: "jaeger:6831"
+  logSpans: true
+
+grpc:
+  host: "localhost"
+  port: ":8082"
+  endpoint: ":8083"
+
+http:
+  host: "localhost"
+  port: ":8081"
+  endpoint: ":8080"
+
+debug:
+  host: "localhost"
+  port: ":8084"
+  endpoint: ":8085"
+
+redis:
+  username: ""
+  password: ""
+  db: 0
+  host: "redis:6379"
+  logger: ""
+
+multiInstanceMode: false
+
+log:
+  disableColors: false
+  quoteEmptyFields: false
+
+etcd:
+  endpoints:
+    - "http://etcd:2379"
+    - "http://etcd2:2379"
+    - "http://etcd3:2379"
+  watchList:
+    - "redis"
