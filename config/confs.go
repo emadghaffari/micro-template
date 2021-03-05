@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 var (
 	// Global config
 	Global global
@@ -33,12 +31,7 @@ type global struct {
 
 // Service details
 type service struct {
-	Name  string `yaml:"service.name"`
-	Redis struct {
-		SMSDuration         time.Duration `yaml:"service.redis.smsDuration"`
-		SMSCodeVerification time.Duration `yaml:"service.redis.smsCodeVerification"`
-		UserDuration        time.Duration `yaml:"service.redis.userDuration"`
-	}
+	Name string `yaml:"service.name"`
 }
 
 // Jaeger tracer
