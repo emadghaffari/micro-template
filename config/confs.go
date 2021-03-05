@@ -28,6 +28,7 @@ type global struct {
 	Jaeger  jaeger
 	Log     loggingConfig
 	ETCD    etcd
+	Redis   redis
 }
 
 // Service details
@@ -54,4 +55,10 @@ type loggingConfig struct {
 
 type etcd struct {
 	Endpoints []string `json:"endpoints" yaml:"etcd.endpoints"`
+	WatchList []string `json:"watch_list" yaml:"etcd.watchList"`
+}
+
+// redis struct
+type redis struct {
+	Address string `json:"address" yaml:"redis.address"`
 }
