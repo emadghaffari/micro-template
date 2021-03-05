@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -23,6 +24,7 @@ import (
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-lib/metrics"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -55,10 +57,7 @@ func StartApplication() {
 	defer closer.Close()
 
 	if viper.GetString("environment") == "production" {
-		fmt.Printf("etcd storage loaded successfully \n")
-		if err := etcd.Storage.Connect(); err != nil {
-			return
-		}
+		initConfigServer()
 		defer etcd.Storage.GetClient().Close()
 	}
 
@@ -182,4 +181,24 @@ func initJaeger() (io.Closer, error) {
 	opentracing.SetGlobalTracer(tracer)
 
 	return closer, nil
+}
+
+// in production you load envs from etcd storage
+// you can change, add or delete watch keys
+// watches example: key: redis - vaule: {"password":"****","address":"***:6985","db":"0",....}
+func initConfigServer() {
+	fmt.Printf("etcd storage loaded successfully \n")
+	if err := etcd.Storage.Connect(); err != nil {
+		return
+	}
+
+	// watch on keys you want
+	for _, key := range config.Global.ETCD.WatchList {
+		etcd.Storage.WatchKey(context.Background(), key, func(e *clientv3.Event) {
+
+			// set configs from storage to struct - if exists in Set method
+			config.Global.Set(string(e.Kv.Key), e.Kv.Value)
+
+		}, clientv3.WithPrefix())
+	}
 }
