@@ -5,7 +5,7 @@ services:
   micro:
     build: .
     volumes:
-      - micro:/go/src/application
+      - .:/go/src/application
     networks:
       - backend
     depends_on:
@@ -15,8 +15,8 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:1.20
     ports:
-      - "6831:6831/udp"
-      - "16686:16686"
+      - "1111:6831/udp"
+      - "1112:16686"
     networks:
       - backend
       - frontend
@@ -72,6 +72,3 @@ networks:
     name: backend
   frontend:
     name: frontend
-
-volumes:
-  micro:
