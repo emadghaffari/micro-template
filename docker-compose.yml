@@ -34,7 +34,8 @@ services:
       - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
-
+    networks:
+      - backend
   # etcd store node 2
   etcd2:
     image: bitnami/etcd:3.4.3
@@ -48,7 +49,8 @@ services:
       - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
-
+    networks:
+      - backend
   # etcd store node 3
   etcd3:
     image: bitnami/etcd:3.4.3
@@ -62,3 +64,14 @@ services:
       - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
+    networks:
+      - backend
+
+networks:
+  backend:
+    name: backend
+  frontend:
+    name: frontend
+
+volumes:
+  micro:
