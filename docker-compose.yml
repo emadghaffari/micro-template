@@ -129,6 +129,7 @@ services:
     networks:
       - backend
       - frontend
+  
   # -----------------------------
   # nats message broker
   # -----------------------------
@@ -176,12 +177,19 @@ services:
     networks:
       - backend
     
+
+# -----------------------------
+# networks
+# -----------------------------
 networks:
   backend:
     name: backend
   frontend:
     name: frontend
 
+# -----------------------------
+# volumes
+# -----------------------------
 volumes: 
   psql-micro:
     driver: local
