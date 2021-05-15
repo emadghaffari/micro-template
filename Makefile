@@ -6,7 +6,7 @@ proto:
 	
 .PHONY: build
 build:
-	go build -o auth *.go
+	go build -o micro *.go
 
 .PHONY: test
 test:

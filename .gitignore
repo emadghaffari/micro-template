@@ -1,5 +1,5 @@
 config.yaml
-auth
+micro
 vendor/
 logs/*
 !logs/README.md
