@@ -1,2 +1,2 @@
 ### domain
-in domain, we connect to databases and push or get data from databases like redis or postgress
+in domain, we connect to databases and push or get data from databases like redis or postgres

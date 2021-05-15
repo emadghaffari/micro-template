@@ -62,9 +62,9 @@ etcd:
   watchList:
     - "redis"
     - "service"
-    - "postgress"
+    - "postgres"
 
-postgress:
+postgres:
   username: "root"
   password: "password"
   host: "db"

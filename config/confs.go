@@ -13,7 +13,7 @@ type GlobalConfig struct {
 	Log         loggingConfig `yaml:"loggingConfig"`
 	ETCD        etcd          `yaml:"etcd"`
 	Redis       redis         `yaml:"redis"`
-	POSTGRESS   database      `yaml:"database"`
+	POSTGRES   database      `yaml:"database"`
 	Nats        nats          `yaml:"nats"`
 	JWT         JWT           `yaml:"jwt"`
 }
