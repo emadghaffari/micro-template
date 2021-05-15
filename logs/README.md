@@ -1,1 +1,2 @@
-implement log files 
+### logs
+log files generated in application
