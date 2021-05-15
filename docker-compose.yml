@@ -140,8 +140,50 @@ services:
     networks:
       - backend
    
+  # -----------------------------
+  # postgres database
+  # -----------------------------
+  postgres:
+    image: postgres:13.3
+    restart: unless-stopped
+    volumes: 
+      - psql-micro:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: admin
+      POSTGRES_DB: micro
+    networks: 
+      - backend
+   
+  # -----------------------------
+  # postgres admin ui 
+  # login username and password is PGADMIN_DEFAULT_EMAIL,PGADMIN_DEFAULT_PASSWORD
+  # connect to database 
+  # 1- servers -> create -> server...
+  # 2- select name -> connections tab -> host(postgres), username(POSTGRES_USER),password(POSTGRES_PASSWORD)
+  # -----------------------------
+  pgadmin:
+    image: dpage/pgadmin4:5.2
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-emadghaffariii@gmail.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-password}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+        - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - backend
+    
 networks:
   backend:
     name: backend
   frontend:
     name: frontend
+
+volumes: 
+  psql-micro:
+    driver: local
+  pgadmin:
+    driver: local
