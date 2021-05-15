@@ -21,6 +21,7 @@ func Load(path string) error {
 	return nil
 }
 
+// file func
 func file(path string) error {
 	log := logger.GetZapLogger(false)
 
@@ -57,10 +58,6 @@ func file(path string) error {
 
 		return err
 	}
-
-	// FIXME DELETE the comments
-	// b, _ := json.Marshal(Global)
-	// fmt.Println(string(b))
 
 	return nil
 }

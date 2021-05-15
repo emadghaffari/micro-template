@@ -2,56 +2,18 @@ package config
 
 var (
 	// Global config
-	Global global
+	Global GlobalConfig
 )
 
-type global struct {
-	Environment string `yaml:"environment"`
-	GRPC        struct {
-		Host     string `yaml:"grpc.host"`
-		Port     string `yaml:"grpc.port"`
-		Endpoint string `yaml:"grpc.endpoint"`
-	}
-	HTTP struct {
-		Host     string `yaml:"http.host"`
-		Port     string `yaml:"http.port"`
-		Endpoint string `yaml:"http.endpoint"`
-	}
-	DEBUG struct {
-		Host     string `yaml:"debug.host"`
-		Port     string `yaml:"debug.port"`
-		Endpoint string `yaml:"debug.endpoint"`
-	}
-	Service service
-	Jaeger  jaeger
-	Log     loggingConfig
-	ETCD    etcd
-	Redis   redis
-}
-
-// Service details
-type service struct {
-	Name string `yaml:"service.name"`
-}
-
-// Jaeger tracer
-type jaeger struct {
-	HostPort string `yaml:"jaeger.hostPort"`
-	LogSpans bool   `yaml:"jaeger.logSpans"`
-}
-
-// LoggingConfig struct
-type loggingConfig struct {
-	DisableColors    bool `json:"disable_colors" yaml:"log.disableColors"`
-	QuoteEmptyFields bool `json:"quote_empty_fields" yaml:"log.quoteEmptyFields"`
-}
-
-type etcd struct {
-	Endpoints []string `json:"endpoints" yaml:"etcd.endpoints"`
-	WatchList []string `json:"watch_list" yaml:"etcd.watchList"`
-}
-
-// redis struct
-type redis struct {
-	Address string `json:"address" yaml:"redis.address"`
+// GlobalConfig is base of configs we need for project
+type GlobalConfig struct {
+	Environment string        `yaml:"environment"`
+	Service     service       `yaml:"service"`
+	Jaeger      jaeger        `yaml:"jaeger"`
+	Log         loggingConfig `yaml:"loggingConfig"`
+	ETCD        etcd          `yaml:"etcd"`
+	Redis       redis         `yaml:"redis"`
+	POSTGRESS   database      `yaml:"database"`
+	Nats        nats          `yaml:"nats"`
+	JWT         JWT           `yaml:"jwt"`
 }
