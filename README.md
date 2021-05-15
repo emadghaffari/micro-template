@@ -5,7 +5,7 @@ template for grpc micro services
 #### services:
  - service tracer: jaeger
  - config server: etcd
- - cmd: gobra
+ - cmd: cobra
  - configs: from file(dev), from config server(prod)
  - logger: zap
 
