@@ -140,7 +140,7 @@ func (j *jwt) Verify(tk string) (string, error) {
 	if ok && token.Valid {
 		AccessUUID, ok := claims["uuid"].(string)
 		if !ok {
-			return "", fmt.Errorf("Error in claims uuid from client")
+			return "", fmt.Errorf("error in claims uuid from client")
 		}
 
 		return AccessUUID, nil
