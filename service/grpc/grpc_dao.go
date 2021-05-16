@@ -4,7 +4,7 @@ var (
 	Service Micro = &micro{}
 )
 
+type Micro interface{}
+
 // micro service
 type micro struct{}
-
-type Micro interface{}
