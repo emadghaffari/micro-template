@@ -14,10 +14,9 @@ import (
 )
 
 var (
-	Storage   store = &rds{}
-	logger    *zap.Logger
-	namespace string = ""
-	once      sync.Once
+	Storage store = &rds{}
+	logger  *zap.Logger
+	once    sync.Once
 )
 
 // store interface is interface for store things into redis
@@ -80,7 +79,7 @@ func (r *rds) Get(ctx context.Context, key string, dest interface{}) error {
 			Development().
 			Level(zap.ErrorLevel).
 			Commit(err.Error())
-		return fmt.Errorf("Value Not Found")
+		return fmt.Errorf("value not found")
 	}
 
 	if err != nil {
