@@ -17,7 +17,7 @@ import (
 )
 
 // Generate new jwt token and store into redis DB
-func (j *jwt) Generate(ctx context.Context, model interface{}) (*model.JWT, error) {
+func (j *micro) Generate(ctx context.Context, model interface{}) (*model.JWT, error) {
 	logger = zapLogger.GetZapLogger(config.Confs.Debug())
 
 	td, err := j.GenerateJWT()
@@ -37,7 +37,7 @@ func (j *jwt) Generate(ctx context.Context, model interface{}) (*model.JWT, erro
 }
 
 // generate JWT tokens
-func (j *jwt) GenerateJWT() (*model.JWT, error) {
+func (j *micro) GenerateJWT() (*model.JWT, error) {
 	// create new jwt
 	td := &model.JWT{}
 	td.AtExpires = time.Now().Add(time.Duration(config.Confs.Get().Redis.UserDuration)).Unix()
@@ -65,7 +65,7 @@ func (j *jwt) GenerateJWT() (*model.JWT, error) {
 }
 
 // generate refresh tokens
-func (j *jwt) genRefJWT(td *model.JWT) error {
+func (j *micro) genRefJWT(td *model.JWT) error {
 	// New MapClaims for refresh access token
 	rtClaims := jjwt.MapClaims{}
 	rtClaims["uuid"] = td.RefreshUUID
@@ -85,7 +85,7 @@ func (j *jwt) genRefJWT(td *model.JWT) error {
 }
 
 // store into DB
-func (j *jwt) store(ctx context.Context, model interface{}, td *model.JWT) error {
+func (j *micro) store(ctx context.Context, model interface{}, td *model.JWT) error {
 	bt, err := json.Marshal(model)
 	if err != nil {
 		zapLogger.Prepare(logger).
@@ -109,7 +109,7 @@ func (j *jwt) store(ctx context.Context, model interface{}, td *model.JWT) error
 }
 
 // Get jwt token from redis
-func (j *jwt) Get(ctx context.Context, token string, response interface{}) error {
+func (j *micro) Get(ctx context.Context, token string, response interface{}) error {
 	if err := redis.Storage.Get(ctx, token, &response); err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (j *jwt) Get(ctx context.Context, token string, response interface{}) error
 }
 
 // Verify a token
-func (j *jwt) Verify(tk string) (string, error) {
+func (j *micro) Verify(tk string) (string, error) {
 	strArr := strings.Split(tk, " ")
 	if len(strArr) != 2 {
 		return "", fmt.Errorf("invalid JWT token")

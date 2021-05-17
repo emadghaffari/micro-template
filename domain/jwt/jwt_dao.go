@@ -9,12 +9,12 @@ import (
 
 var (
 	// JWT variable instance of intef
-	Model  Interf = &jwt{}
+	Model  Micro = &micro{}
 	logger *zap.Logger
 )
 
 // jwt meths interface
-type Interf interface {
+type Micro interface {
 	Generate(ctx context.Context, model interface{}) (*model.JWT, error)
 	GenerateJWT() (*model.JWT, error)
 	genRefJWT(td *model.JWT) error
@@ -24,4 +24,4 @@ type Interf interface {
 }
 
 // jwt struct
-type jwt struct{}
+type micro struct{}
