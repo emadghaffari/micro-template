@@ -17,3 +17,7 @@ vendor:
 	go get ./...
 	go mod vendor
 	go mod verify
+
+.PHONY: config
+config:
+	cp -rf ./config.example.yaml ./config.yaml

@@ -1,6 +1,8 @@
 # micro-template
 template for grpc micro services
 
+### configs
+use make config for generate basci config
 
 #### services:
  - service tracer: jaeger
