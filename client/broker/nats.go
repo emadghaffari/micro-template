@@ -35,19 +35,19 @@ func (n *nts) Connect() error {
 	oncen.Do(func() {
 		var conn *nats.Conn
 		opts := nats.Options{
-			Name:         config.Global.Service.Name,
-			Secure:       config.Global.Nats.Auth,
-			User:         config.Global.Nats.Username,
-			Password:     config.Global.Nats.Password,
+			Name:         config.Confs.Get().Service.Name,
+			Secure:       config.Confs.Get().Nats.Auth,
+			User:         config.Confs.Get().Nats.Username,
+			Password:     config.Confs.Get().Nats.Password,
 			MaxReconnect: 10,
-			Url:          strings.Join(config.Global.Nats.Endpoints, ","),
+			Url:          strings.Join(config.Confs.Get().Nats.Endpoints, ","),
 			PingInterval: time.Minute * 10,
 		}
 
 		// try to connect to nats message broker
 		conn, err = opts.Connect()
 		if err != nil {
-			logger := zapLogger.GetZapLogger(config.Global.Debug())
+			logger := zapLogger.GetZapLogger(config.Confs.Debug())
 			zapLogger.Prepare(logger).
 				Development().
 				Level(zap.ErrorLevel).
@@ -73,7 +73,7 @@ func (n *nts) Conn() *nats.EncodedConn {
 // Publish new message
 func (n *nts) Publish(ctx context.Context, subject string, value interface{}) error {
 	if err := n.conn.Publish(subject, &value); err != nil {
-		logger := zapLogger.GetZapLogger(config.Global.Debug())
+		logger := zapLogger.GetZapLogger(config.Confs.Debug())
 		zapLogger.Prepare(logger).
 			Development().
 			Level(zap.ErrorLevel).

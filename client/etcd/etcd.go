@@ -38,7 +38,7 @@ func (e *etcd) Connect() error {
 	var err error
 	e.once.Do(func() {
 		e.cli, err = client.New(client.Config{
-			Endpoints:   config.Global.ETCD.Endpoints,
+			Endpoints:   config.Confs.Get().ETCD.Endpoints,
 			DialTimeout: 5 * time.Second,
 		})
 	})

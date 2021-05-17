@@ -18,7 +18,7 @@ import (
 
 // Generate new jwt token and store into redis DB
 func (j *jwt) Generate(ctx context.Context, model interface{}) (*model.JWT, error) {
-	logger = zapLogger.GetZapLogger(config.Global.Debug())
+	logger = zapLogger.GetZapLogger(config.Confs.Debug())
 
 	td, err := j.GenerateJWT()
 	if err != nil {
@@ -40,8 +40,8 @@ func (j *jwt) Generate(ctx context.Context, model interface{}) (*model.JWT, erro
 func (j *jwt) GenerateJWT() (*model.JWT, error) {
 	// create new jwt
 	td := &model.JWT{}
-	td.AtExpires = time.Now().Add(time.Duration(config.Global.Redis.UserDuration)).Unix()
-	td.RtExpires = time.Now().Add(time.Duration(config.Global.Redis.UserDuration)).Unix()
+	td.AtExpires = time.Now().Add(time.Duration(config.Confs.Get().Redis.UserDuration)).Unix()
+	td.RtExpires = time.Now().Add(time.Duration(config.Confs.Get().Redis.UserDuration)).Unix()
 	td.AccessUUID = token.Generate(30)
 	td.RefreshUUID = token.Generate(60)
 
@@ -53,7 +53,7 @@ func (j *jwt) GenerateJWT() (*model.JWT, error) {
 	at := jjwt.NewWithClaims(jjwt.SigningMethodHS256, atClaims)
 
 	var err error
-	td.AccessToken, err = at.SignedString([]byte(config.Global.JWT.Secret))
+	td.AccessToken, err = at.SignedString([]byte(config.Confs.Get().JWT.Secret))
 	if err != nil {
 		zapLogger.Prepare(logger).
 			Development().
@@ -73,7 +73,7 @@ func (j *jwt) genRefJWT(td *model.JWT) error {
 	rt := jjwt.NewWithClaims(jjwt.SigningMethodHS256, rtClaims)
 
 	var err error
-	td.RefreshToken, err = rt.SignedString([]byte(config.Global.JWT.RSecret))
+	td.RefreshToken, err = rt.SignedString([]byte(config.Confs.Get().JWT.RSecret))
 	if err != nil {
 		zapLogger.Prepare(logger).
 			Development().
@@ -127,7 +127,7 @@ func (j *jwt) Verify(tk string) (string, error) {
 		if _, ok := token.Method.(*jjwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(config.Global.JWT.Secret), nil
+		return []byte(config.Confs.Get().JWT.Secret), nil
 	})
 	if err != nil {
 		return "", err

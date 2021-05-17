@@ -21,7 +21,7 @@ var (
 
 // store interface is interface for store things into redis
 type store interface {
-	Connect(config config.GlobalConfig) error
+	Connect(config config.Config) error
 	Set(ctx context.Context, key string, value interface{}, duration time.Duration) error
 	Get(ctx context.Context, key string, dest interface{}) error
 	Del(ctx context.Context, key ...string) error
@@ -33,11 +33,11 @@ type rds struct {
 }
 
 // Connect, method for connect to redis
-func (r *rds) Connect(confs config.GlobalConfig) error {
+func (r *rds) Connect(confs config.Config) error {
 	var err error
 
 	once.Do(func() {
-		logger = zapLogger.GetZapLogger(confs.Debug())
+		logger = zapLogger.GetZapLogger(config.Confs.Debug())
 
 		r.db = redis.NewClient(&redis.Options{
 			DB:       confs.Redis.DB,

@@ -19,14 +19,14 @@ func (j *jtracer) Connect() (io.Closer, error) {
 	// Sample configuration for testing. Use constant sampling to sample every trace
 	// and enable LogSpan to log every span via configured Logger.
 	cfg := jaegercfg.Configuration{
-		ServiceName: config.Global.Service.Name,
+		ServiceName: config.Confs.Get().Service.Name,
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
 			Param: 1,
 		},
 		Reporter: &jaegercfg.ReporterConfig{
-			LogSpans:           config.Global.Jaeger.LogSpans,
-			LocalAgentHostPort: config.Global.Jaeger.HostPort,
+			LogSpans:           config.Confs.Get().Jaeger.LogSpans,
+			LocalAgentHostPort: config.Confs.Get().Jaeger.HostPort,
 		},
 	}
 
@@ -42,7 +42,7 @@ func (j *jtracer) Connect() (io.Closer, error) {
 		jaegercfg.ZipkinSharedRPCSpan(true),
 	)
 	if err != nil {
-		logger := zapLogger.GetZapLogger(config.Global.Debug())
+		logger := zapLogger.GetZapLogger(config.Confs.Debug())
 		zapLogger.Prepare(logger).Development().Level(zap.InfoLevel).Add("msg", "during Listen jaeger err").Commit(err.Error())
 
 		return nil, err

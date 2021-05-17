@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -49,6 +50,14 @@ func (a *App) StartApplication() {
 		return
 	}
 
+	fmt.Println("/////////////////////////////")
+	fmt.Println("/////////////////////////////")
+	bts, _ := json.MarshalIndent(config.Confs.Get(), "\n", "\t")
+	fmt.Println(string(bts))
+	fmt.Println("/////////////////////////////")
+	fmt.Println("/////////////////////////////")
+	fmt.Println("/////////////////////////////")
+
 	//  Determine which tracer to use. We'll pass the tracer to all the
 	// components that use it, as a dependency
 	closer, err := a.initJaeger()
@@ -85,7 +94,7 @@ func (a *App) StartApplication() {
 func (a *App) initLogger() {
 	defer fmt.Printf("zap logger is available \n")
 	zapLogger.SetLogPath("logs")
-	logger = zapLogger.GetZapLogger(config.Global.Debug())
+	logger = zapLogger.GetZapLogger(config.Confs.Debug())
 }
 
 // init configs
@@ -99,17 +108,17 @@ func (a *App) initConfigs() error {
 	}
 
 	// read from file
-	return config.Load(dir + "/config.yaml")
+	return config.Confs.Load(dir + "/config.yaml")
 }
 
 // init grpc connection
 func (a *App) initGRPCHandler(g *group.Group) {
-	defer fmt.Printf("grpc connected port:%s \n", config.Global.Service.GRPC.Port)
+	defer fmt.Printf("grpc connected port:%s \n", config.Confs.Get().Service.GRPC.Port)
 
 	options := a.defaultGRPCOptions(logger, jtrace.Tracer.GetTracer())
 	// Add your GRPC options here
 
-	lis, err := net.Listen("tcp", config.Global.Service.GRPC.Port)
+	lis, err := net.Listen("tcp", config.Confs.Get().Service.GRPC.Port)
 	if err != nil {
 		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit(err.Error())
 	}
@@ -130,10 +139,10 @@ func (a *App) initGRPCHandler(g *group.Group) {
 // init HTTP Endpoint
 // add rest endpoints
 func (a *App) initHTTPEndpoint(g *group.Group) {
-	defer fmt.Printf("metrics started port:%s \n", config.Global.Service.HTTP.Port)
+	defer fmt.Printf("metrics started port:%s \n", config.Confs.Get().Service.HTTP.Port)
 
 	g.Add(func() error {
-		if err := router.Router.GetRouter().Run(config.Global.Service.HTTP.Port); err != nil {
+		if err := router.Router.GetRouter().Run(config.Confs.Get().Service.HTTP.Port); err != nil {
 			zapLogger.Prepare(logger).Development().Level(zap.InfoLevel).Add("msg", "transport debug/HTTP during Listen err").Commit(err.Error())
 			return err
 		}
@@ -179,12 +188,12 @@ func (a *App) initConfigServer() error {
 	}
 
 	// loop over watchList
-	for _, key := range config.Global.ETCD.WatchList {
+	for _, key := range config.Confs.Get().ETCD.WatchList {
 
 		// get configs for first time on app starts
 		err := etcd.Storage.GetKey(context.Background(), key, func(kv *mvccpb.KeyValue) {
 			// set configs from storage to struct - if exists in Set method
-			config.Global.Set(string(kv.Key), kv.Value)
+			config.Confs.Set(string(kv.Key), kv.Value)
 
 		}, clientv3.WithPrefix())
 		if err != nil {
@@ -195,13 +204,13 @@ func (a *App) initConfigServer() error {
 		etcd.Storage.WatchKey(context.Background(), key, func(e *clientv3.Event) {
 
 			// set configs from storage to struct - if exists in Set method
-			config.Global.Set(string(e.Kv.Key), e.Kv.Value)
+			config.Confs.Set(string(e.Kv.Key), e.Kv.Value)
 
 		}, clientv3.WithPrefix())
 	}
 
 	// apply service discovery - put service details
-	return etcd.Storage.Put(context.Background(), config.Global.Service.Name, config.Global.GetService())
+	return etcd.Storage.Put(context.Background(), config.Confs.Get().Service.Name, config.Confs.GetService())
 }
 
 // init message broker
@@ -218,7 +227,7 @@ func (a *App) initMessageBroker() error {
 // init Redis database
 func (a *App) initRedis() error {
 	fmt.Printf("redis database loaded successfully \n")
-	if err := redis.Storage.Connect(config.Global); err != nil {
+	if err := redis.Storage.Connect(config.Confs.Get()); err != nil {
 		fmt.Println(err)
 		return err
 	}

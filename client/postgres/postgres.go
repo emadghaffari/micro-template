@@ -12,7 +12,7 @@ var (
 
 // store interface is interface for store things into postgres
 type store interface {
-	Connect(config config.GlobalConfig) error
+	Connect(config config.Config) error
 }
 
 // postgres struct
@@ -21,7 +21,7 @@ type psql struct {
 }
 
 // Connect method job is connect to postgres database and check migration
-func (m *psql) Connect(config config.GlobalConfig) error {
+func (m *psql) Connect(config config.Config) error {
 	// logger := zapLogger.GetZapLogger(config.Debug())
 	var err error
 	once.Do(func() {})
