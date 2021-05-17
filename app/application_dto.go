@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -49,14 +48,6 @@ func (a *App) StartApplication() {
 	if err := a.initConfigs(); err != nil {
 		return
 	}
-
-	fmt.Println("/////////////////////////////")
-	fmt.Println("/////////////////////////////")
-	bts, _ := json.MarshalIndent(config.Confs.Get(), "\n", "\t")
-	fmt.Println(string(bts))
-	fmt.Println("/////////////////////////////")
-	fmt.Println("/////////////////////////////")
-	fmt.Println("/////////////////////////////")
 
 	//  Determine which tracer to use. We'll pass the tracer to all the
 	// components that use it, as a dependency
