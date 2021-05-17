@@ -28,6 +28,7 @@ type Application interface {
 	initRedis() error
 	createService() (g *group.Group)
 	defaultGRPCOptions(logger *zap.Logger, tracer opentracing.Tracer) []grpc.ServerOption
+	initPostgres() error
 }
 
 type App struct{}

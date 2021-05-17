@@ -10,6 +10,7 @@ import (
 	"micro/client/broker"
 	"micro/client/etcd"
 	"micro/client/jtrace"
+	"micro/client/postgres"
 	"micro/client/redis"
 	"micro/config"
 	controller "micro/controller/grpc"
@@ -68,6 +69,11 @@ func (a *App) StartApplication() {
 		return
 	}
 
+	if err := a.initPostgres(); err != nil {
+		return
+	}
+	defer postgres.Storage.Get().Close()
+
 	if err := a.initMessageBroker(); err != nil {
 		return
 	}
@@ -90,14 +96,15 @@ func (a *App) initLogger() {
 
 // init configs
 func (a *App) initConfigs() error {
-	defer fmt.Printf("configs loaded from file successfully \n")
 
 	// Current working directory
 	dir, err := os.Getwd()
 	if err != nil {
 		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit("init configs")
+		return err
 	}
 
+	defer fmt.Printf("configs loaded from file successfully \n")
 	// read from file
 	return config.Confs.Load(dir + "/config.yaml")
 }
@@ -160,12 +167,12 @@ func (a *App) initCancelInterrupt(g *group.Group) {
 
 // init jaeger tracer
 func (a *App) initJaeger() (io.Closer, error) {
-	defer fmt.Printf("Jaeger loaded successfully \n")
 	closer, err := jtrace.Tracer.Connect()
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("Jaeger loaded successfully \n")
 	return closer, nil
 }
 
@@ -206,25 +213,32 @@ func (a *App) initConfigServer() error {
 
 // init message broker
 func (a *App) initMessageBroker() error {
-	fmt.Printf("nats message broker loaded successfully \n")
 	if err := broker.Nats.Connect(); err != nil {
 		return err
 	}
 
+	fmt.Printf("nats message broker loaded successfully \n")
 	return nil
-
 }
 
 // init Redis database
 func (a *App) initRedis() error {
-	fmt.Printf("redis database loaded successfully \n")
 	if err := redis.Storage.Connect(config.Confs.Get()); err != nil {
-		fmt.Println(err)
 		return err
 	}
 
+	fmt.Printf("redis database loaded successfully \n")
 	return nil
+}
 
+// init postgres database
+func (a *App) initPostgres() error {
+	if err := postgres.Storage.Connect(config.Confs.Get()); err != nil {
+		return err
+	}
+
+	fmt.Printf("postgres database loaded successfully \n")
+	return nil
 }
 
 func (a *App) createService() (g *group.Group) {
