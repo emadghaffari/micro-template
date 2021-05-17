@@ -65,12 +65,11 @@ etcd:
     - "postgres"
 
 postgres:
-  username: "root"
+  username: "admin"
   password: "password"
-  host: "db"
+  host: "postgres:5432"
   schema: "micro"
-  automigrate: true
-  logger: true
+
 
 Nats:
   username: ""
