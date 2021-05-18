@@ -213,7 +213,7 @@ func (a *App) initConfigServer() error {
 
 // init message broker
 func (a *App) initMessageBroker() error {
-	if err := broker.Nats.Connect(); err != nil {
+	if err := broker.Nats.Connect(config.Confs.Get()); err != nil {
 		return err
 	}
 
