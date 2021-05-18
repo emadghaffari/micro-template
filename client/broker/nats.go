@@ -4,7 +4,6 @@ import (
 	"context"
 	"micro/config"
 	zapLogger "micro/pkg/logger"
-	"strings"
 	"sync"
 	"time"
 
@@ -13,35 +12,48 @@ import (
 )
 
 var (
-	Nats  NatsBroker = &nts{}
-	oncen sync.Once
+	Nats NatsBroker = &nts{}
+	nc   *nats.EncodedConn
+	once sync.Once
 )
 
 // NatsBroker interface
 type NatsBroker interface {
-	Connect() error
+	Connect(conf config.Config) error
 	Conn() *nats.EncodedConn
 	Publish(ctx context.Context, subject string, value interface{}) error
+	SendChan(subject string, ch chan interface{}) error
+	SendByContext(ctx context.Context, subject string, req interface{}, resp interface{}) error
+	RequestWithReply(subject string, req interface{}, resp string) error
+	Subscribe(subject string, callBack func(resp *nats.Msg)) (*nats.Subscription, error)
+	RecvChan(subject string, ch chan interface{}) (*nats.Subscription, error)
+	RecvGroup(subject, queue string, callBack nats.Handler) (*nats.Subscription, error)
+	errorReporter(log *zap.Logger) nats.ErrHandler
 }
 
 // nts struct for nats message broker
 type nts struct {
-	conn *nats.EncodedConn
+	logger *zap.Logger
 }
 
 // Connect nats broker
-func (n *nts) Connect() error {
+func (n *nts) Connect(conf config.Config) error {
+	n.logger = zapLogger.GetZapLogger(config.Confs.Debug())
 	var err error
-	oncen.Do(func() {
+	once.Do(func() {
 		var conn *nats.Conn
 		opts := nats.Options{
-			Name:         config.Confs.Get().Service.Name,
-			Secure:       config.Confs.Get().Nats.Auth,
-			User:         config.Confs.Get().Nats.Username,
-			Password:     config.Confs.Get().Nats.Password,
-			MaxReconnect: 10,
-			Url:          strings.Join(config.Confs.Get().Nats.Endpoints, ","),
-			PingInterval: time.Minute * 10,
+			Name:           conf.Service.Name,
+			Secure:         conf.Nats.Auth,
+			User:           conf.Nats.Username,
+			Password:       conf.Nats.Password,
+			Servers:        conf.Nats.Endpoints,
+			PingInterval:   time.Second * 60,
+			AllowReconnect: conf.Nats.AllowReconnect,
+			MaxReconnect:   conf.Nats.MaxReconnect,
+			ReconnectWait:  time.Duration(conf.Nats.ReconnectWait) * time.Second,
+			Timeout:        time.Duration(conf.Nats.Timeout) * time.Second,
+			AsyncErrorCB:   n.errorReporter(n.logger),
 		}
 
 		// try to connect to nats message broker
@@ -55,7 +67,7 @@ func (n *nts) Connect() error {
 			return
 		}
 
-		n.conn, err = nats.NewEncodedConn(conn, nats.JSON_ENCODER)
+		nc, err = nats.NewEncodedConn(conn, conf.Nats.Encoder)
 		if err != nil {
 			return
 		}
@@ -67,12 +79,12 @@ func (n *nts) Connect() error {
 
 // Conn get Connection
 func (n *nts) Conn() *nats.EncodedConn {
-	return n.conn
+	return nc
 }
 
 // Publish new message
 func (n *nts) Publish(ctx context.Context, subject string, value interface{}) error {
-	if err := n.conn.Publish(subject, &value); err != nil {
+	if err := nc.Publish(subject, &value); err != nil {
 		logger := zapLogger.GetZapLogger(config.Confs.Debug())
 		zapLogger.Prepare(logger).
 			Development().
@@ -82,4 +94,88 @@ func (n *nts) Publish(ctx context.Context, subject string, value interface{}) er
 	}
 
 	return nil
+}
+
+// SendChan, send a untyped chan
+func (n *nts) SendChan(subject string, ch chan interface{}) error {
+	return nc.BindSendChan(subject, ch)
+}
+
+// SendByContext, send a request and get response with spesific context
+func (n *nts) SendByContext(ctx context.Context, subject string, req interface{}, resp interface{}) error {
+	if err := nc.RequestWithContext(ctx, subject, req, resp); err != nil {
+		n.logger.Info("msg", zap.Any("err", err.Error()))
+		return err
+	}
+	return nil
+}
+
+// RequestWithReply, send a request and get response of request
+// Then call Flush
+func (n *nts) RequestWithReply(subject string, req interface{}, resp string) error {
+	if err := nc.PublishRequest(subject, resp, req); err != nil {
+		n.logger.Info("msg", zap.Any("err", err.Error()))
+		return err
+	}
+
+	if err := nc.Flush(); err != nil {
+		n.logger.Info("msg", zap.Any("err", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+// Subscribe, start to subscribe to a subject
+func (n *nts) Subscribe(subject string, callBack func(resp *nats.Msg)) (*nats.Subscription, error) {
+	sub, err := nc.Subscribe(subject, callBack)
+	if err != nil {
+		n.logger.Info("msg", zap.Any("err", err.Error()))
+		return nil, err
+	}
+
+	return sub, nil
+}
+
+// RecvChan, BindRecvChan
+func (n *nts) RecvChan(subject string, ch chan interface{}) (*nats.Subscription, error) {
+	sub, err := nc.BindRecvChan(subject, ch)
+
+	if err != nil {
+		n.logger.Info("msg", zap.Any("err", err.Error()))
+		return nil, err
+	}
+
+	return sub, nil
+}
+
+// RecvGroup, connect to subject in group mode
+func (n *nts) RecvGroup(subject, queue string, callBack nats.Handler) (*nats.Subscription, error) {
+	sub, err := nc.QueueSubscribe(subject, queue, callBack)
+	if err != nil {
+		n.logger.Info("msg", zap.Any("err", err.Error()))
+		return nil, err
+	}
+
+	return sub, nil
+}
+
+// errorReporter, when nats has error
+func (n *nts) errorReporter(log *zap.Logger) nats.ErrHandler {
+	return func(_ *nats.Conn, sub *nats.Subscription, err error) {
+		pendingMsgs, pendingBytes, _ := sub.Pending()
+		droppedMsgs, _ := sub.Dropped()
+		maxMsgs, maxBytes, _ := sub.PendingLimits()
+
+		log.Error(err.Error(),
+			zap.Any("subject", sub.Subject),
+			zap.Any("queue", sub.Queue),
+			zap.Any("pending_msgs", pendingMsgs),
+			zap.Any("pending_bytes", pendingBytes),
+			zap.Any("max_msgs_pending", maxMsgs),
+			zap.Any("max_bytes_pending", maxBytes),
+			zap.Any("dropped_msgs", droppedMsgs),
+			zap.Any("message", "Error while consuming from nats"),
+		)
+	}
 }
