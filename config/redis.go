@@ -3,7 +3,7 @@ package config
 import "time"
 
 // redis struct
-type redis struct {
+type Redis struct {
 	Username     string        `yaml:"redis.username"`
 	Password     string        `yaml:"redis.password"`
 	DB           int           `yaml:"redis.db"`

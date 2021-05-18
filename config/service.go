@@ -1,7 +1,7 @@
 package config
 
 // Service details
-type service struct {
+type Service struct {
 	Name    string `yaml:"service.name"`
 	ID      string `yaml:"service.id"`
 	BaseURL string `yaml:"service.baseURL"`
@@ -16,10 +16,10 @@ type service struct {
 		Port           string `yaml:"http.port"`
 		RequestTimeout string `yaml:"http.requestTimeout"`
 	}
-	Router []router `yaml:"service.router"`
+	Router []Router `yaml:"service.router"`
 }
 
-type router struct {
+type Router struct {
 	Name              string   `yaml:"Name"`
 	Method            string   `yaml:"Method"`
 	URL               string   `yaml:"URL"`

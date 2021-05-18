@@ -1,7 +1,7 @@
 package config
 
 // Jaeger tracer
-type jaeger struct {
+type Jaeger struct {
 	HostPort string `yaml:"jaeger.hostPort"`
 	LogSpans bool   `yaml:"jaeger.logSpans"`
 }

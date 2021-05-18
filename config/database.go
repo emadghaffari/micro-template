@@ -1,7 +1,7 @@
 package config
 
 // database struct
-type database struct {
+type Database struct {
 	Username    string `yaml:"postgres.username"`
 	Password    string `yaml:"postgres.password"`
 	Host        string `yaml:"postgres.host"`

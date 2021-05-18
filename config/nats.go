@@ -1,6 +1,6 @@
 package config
 
-type nats struct {
+type NATS struct {
 	Username       string   `yaml:"nats.username"`
 	Password       string   `yaml:"nats.password"`
 	Auth           bool     `yaml:"nats.auth"`
@@ -9,4 +9,5 @@ type nats struct {
 	MaxReconnect   int      `yaml:"nats.maxReconnect"`
 	ReconnectWait  int      `yaml:"nats.reconnectWait"`
 	Timeout        int      `yaml:"nats.timeout"`
+	Encoder        string   `yaml:"nats.Encoder"`
 }

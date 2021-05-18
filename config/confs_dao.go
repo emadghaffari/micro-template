@@ -17,12 +17,12 @@ type cnfs interface {
 // Config is base of configs we need for project
 type Config struct {
 	Environment string        `yaml:"environment"`
-	Service     service       `yaml:"service"`
-	Jaeger      jaeger        `yaml:"jaeger"`
+	Service     Service       `yaml:"service"`
+	Jaeger      Jaeger        `yaml:"jaeger"`
 	Log         loggingConfig `yaml:"loggingConfig"`
-	ETCD        etcd          `yaml:"etcd"`
-	Redis       redis         `yaml:"redis"`
-	POSTGRES    database      `yaml:"database"`
-	Nats        nats          `yaml:"nats"`
+	ETCD        ETCD          `yaml:"etcd"`
+	Redis       Redis         `yaml:"redis"`
+	POSTGRES    Database      `yaml:"database"`
+	Nats        NATS          `yaml:"nats"`
 	JWT         JWT           `yaml:"jwt"`
 }
