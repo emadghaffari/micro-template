@@ -234,7 +234,7 @@ func TestSendByContext(t *testing.T) {
 		return
 	}
 
-	if err := Nats.SendByContext(nil, subject, []byte("world"), &resp); err != nil {
+	if err := Nats.SendByContext(context.TODO(), subject, []byte("world"), &resp); err != nil {
 		assert.Contains(t, err.Error(), "invalid context")
 	}
 
