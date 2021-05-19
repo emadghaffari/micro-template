@@ -181,7 +181,7 @@ func (a *App) initJaeger() (io.Closer, error) {
 // watches example: key: redis - value: {"password":"****","address":"***:6985","db":"0",....}
 func (a *App) initConfigServer() error {
 	defer fmt.Printf("etcd storage loaded successfully \n")
-	if err := etcd.Storage.Connect(); err != nil {
+	if err := etcd.Storage.Connect(config.Confs.Get()); err != nil {
 		return err
 	}
 
