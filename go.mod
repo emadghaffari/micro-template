@@ -22,9 +22,10 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	go.etcd.io/etcd/api/v3 v3.5.0-alpha.0
-	go.etcd.io/etcd/client/v3 v3.5.0-alpha.0
-	go.uber.org/zap v1.16.0
+	go.etcd.io/etcd/api/v3 v3.5.0-beta.3
+	go.etcd.io/etcd/client/v3 v3.5.0-beta.3
+	go.etcd.io/etcd/tests/v3 v3.5.0-beta.3
+	go.uber.org/zap v1.16.1-0.20210329175301-c23abee72d19
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	google.golang.org/grpc v1.37.1
