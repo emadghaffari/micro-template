@@ -17,11 +17,12 @@ import (
 var (
 	// Storage for etcd storage
 	Storage Store = &etcd{}
+	once    sync.Once
 )
 
 // Store interface
 type Store interface {
-	Connect() error
+	Connect(conf config.Config) error
 	GetClient() *client.Client
 	GetKey(ctx context.Context, key string, callBack func(*mvccpb.KeyValue), options ...client.OpOption) error
 	WatchKey(ctx context.Context, key string, callBack func(*client.Event), options ...client.OpOption)
@@ -29,16 +30,17 @@ type Store interface {
 }
 
 type etcd struct {
-	cli  *client.Client
-	once sync.Once
+	cli *client.Client
 }
 
 // connect method, connect to etcd db
-func (e *etcd) Connect() error {
+func (e *etcd) Connect(conf config.Config) error {
 	var err error
-	e.once.Do(func() {
+	once.Do(func() {
 		e.cli, err = client.New(client.Config{
-			Endpoints:   config.Confs.Get().ETCD.Endpoints,
+			Endpoints:   conf.ETCD.Endpoints,
+			Username:    conf.ETCD.Username,
+			Password:    conf.ETCD.Password,
 			DialTimeout: 5 * time.Second,
 		})
 	})
