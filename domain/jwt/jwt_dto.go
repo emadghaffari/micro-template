@@ -99,10 +99,6 @@ func (j *micro) store(ctx context.Context, model interface{}, td *model.JWT) err
 
 	// make map for store in redis
 	if err := redis.Storage.Set(ctx, td.AccessUUID, string(bt), at.Sub(now)); err != nil {
-		zapLogger.Prepare(logger).
-			Development().
-			Level(zap.ErrorLevel).
-			Commit(err.Error())
 		return err
 	}
 	return nil
