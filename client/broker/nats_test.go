@@ -165,7 +165,6 @@ func TestGetConnection(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	tests := []struct {
@@ -195,7 +194,6 @@ func TestSendChan(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	type person struct {
@@ -220,7 +218,6 @@ func TestSendByContext(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	Nats.Subscribe(subject, func(m *nats.Msg) {
@@ -249,7 +246,6 @@ func TestPublish(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	if err := Nats.Publish(context.Background(), subject, "publish"); err != nil {
@@ -273,7 +269,6 @@ func TestRequestWithReply(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	nc.Subscribe(subject, func(subj, reply, s string) {
@@ -309,7 +304,6 @@ func TestSubscribe(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	if _, err := Nats.Subscribe(subject, nil); err != nil {
@@ -329,7 +323,6 @@ func TestRecvChan(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	ch := make(chan interface{}, 2)
@@ -351,7 +344,6 @@ func TestRecvGroup(t *testing.T) {
 	defer s.Shutdown()
 
 	NewEncodedConnection(t)
-	// defer conn.Close()
 	defer nc.Close()
 
 	if _, err := Nats.RecvGroup(subject, queue, func(resp interface{}) {}); err != nil {
