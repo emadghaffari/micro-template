@@ -55,14 +55,14 @@ log:
   quoteEmptyFields: false
 
 etcd:
+  username: "ruser"
+  password: "T0pS3cr3t"
   endpoints:
-    - "http://etcd:2379"
-    - "http://etcd2:2379"
-    - "http://etcd3:2379"
+    - http://etcd0:2379
   watchList:
     - "redis"
     - "service"
-    - "postgres"
+    - "mysql"
 
 postgres:
   username: "admin"
