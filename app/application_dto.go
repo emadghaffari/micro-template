@@ -5,33 +5,24 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"micro/app/router/grpc"
 	router "micro/app/router/http"
-	"micro/app/router/middleware"
 	"micro/client/broker"
 	"micro/client/etcd"
 	"micro/client/jtrace"
 	"micro/client/postgres"
 	"micro/client/redis"
 	"micro/config"
-	controller "micro/controller/grpc"
 	zapLogger "micro/pkg/logger"
-	pb "micro/proto"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
-	opentracing "github.com/opentracing/opentracing-go"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 // StartApplication func
@@ -112,22 +103,13 @@ func (a *App) initConfigs() error {
 func (a *App) initGRPCHandler(g *group.Group) {
 	defer fmt.Printf("grpc connected port:%s \n", config.Confs.Get().Service.GRPC.Port)
 
-	options := a.defaultGRPCOptions(logger, jtrace.Tracer.GetTracer())
-	// Add your GRPC options here
-
 	lis, err := net.Listen("tcp", config.Confs.Get().Service.GRPC.Port)
 	if err != nil {
 		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit(err.Error())
 	}
 
 	g.Add(func() error {
-		baseServer := grpc.NewServer(options...)
-
-		// reflection for evans
-		reflection.Register(baseServer)
-
-		pb.RegisterAuthServer(baseServer, new(controller.Micro))
-		return baseServer.Serve(lis)
+		return grpc.Router.GetRouter().Serve(lis)
 	}, func(error) {
 		lis.Close()
 	})
@@ -256,24 +238,4 @@ func (a *App) createService() (g *group.Group) {
 	// init cancel
 	Base.initCancelInterrupt(g)
 	return g
-}
-
-// defaultGRPCOptions
-// add options for grpc connection
-func (a *App) defaultGRPCOptions(logger *zap.Logger, tracer opentracing.Tracer) []grpc.ServerOption {
-	options := []grpc.ServerOption{}
-
-	// UnaryInterceptor and OpenTracingServerInterceptor for tracer
-	options = append(options, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-		otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
-		grpc_auth.UnaryServerInterceptor(middleware.M.JWT),
-		grpc_prometheus.UnaryServerInterceptor,
-	),
-	))
-
-	options = append(options, grpc.StreamInterceptor(
-		grpc_auth.StreamServerInterceptor(middleware.M.JWT),
-	))
-
-	return options
 }

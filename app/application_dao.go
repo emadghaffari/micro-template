@@ -4,9 +4,7 @@ import (
 	"io"
 
 	group "github.com/oklog/oklog/pkg/group"
-	opentracing "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 var (
@@ -27,7 +25,6 @@ type Application interface {
 	initMessageBroker() error
 	initRedis() error
 	createService() (g *group.Group)
-	defaultGRPCOptions(logger *zap.Logger, tracer opentracing.Tracer) []grpc.ServerOption
 	initPostgres() error
 }
 
