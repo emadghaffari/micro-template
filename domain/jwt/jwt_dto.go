@@ -84,7 +84,7 @@ func (j *micro) genRefJWT(td *model.JWT) error {
 	return nil
 }
 
-// store into DB
+// store uuid into redis
 func (j *micro) store(ctx context.Context, model interface{}, td *model.JWT) error {
 	bt, err := json.Marshal(model)
 	if err != nil {
