@@ -16,7 +16,6 @@ import (
 )
 
 func TestConnect(t *testing.T) {
-
 	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
@@ -71,7 +70,6 @@ func TestConnect(t *testing.T) {
 }
 
 func TestGetClient(t *testing.T) {
-	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
 
@@ -82,7 +80,6 @@ func TestGetClient(t *testing.T) {
 }
 
 func TestWatchKey(t *testing.T) {
-	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
 
@@ -101,7 +98,6 @@ func TestWatchKey(t *testing.T) {
 }
 
 func TestGetKey(t *testing.T) {
-	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
 
