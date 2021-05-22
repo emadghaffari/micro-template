@@ -60,10 +60,6 @@ etcd:
   password: "T0pS3cr3t"
   endpoints:
     - http://etcd0:2379
-  watchList:
-    - "redis"
-    - "service"
-    - "mysql"
 
 postgres:
   username: "admin"
@@ -76,6 +72,7 @@ Nats:
   username: ""
   password: ""
   auth: false
+  encoder: "json"
   allowReconnect: true
   maxReconnect: 50
   reconnectWait: 5
