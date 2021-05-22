@@ -38,7 +38,7 @@ type nts struct {
 
 // Connect nats broker
 func (n *nts) Connect(conf config.Config) error {
-	n.logger = zapLogger.GetZapLogger(config.Confs.Debug())
+	n.logger = zapLogger.GetZapLogger(config.Confs.GetDebug())
 	var err error
 	once.Do(func() {
 		var conn *nats.Conn
@@ -59,7 +59,7 @@ func (n *nts) Connect(conf config.Config) error {
 		// try to connect to nats message broker
 		conn, err = opts.Connect()
 		if err != nil {
-			logger := zapLogger.GetZapLogger(config.Confs.Debug())
+			logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
 			zapLogger.Prepare(logger).
 				Development().
 				Level(zap.ErrorLevel).
@@ -85,7 +85,7 @@ func (n *nts) Conn() *nats.EncodedConn {
 // Publish new message
 func (n *nts) Publish(ctx context.Context, subject string, value interface{}) error {
 	if err := nc.Publish(subject, &value); err != nil {
-		logger := zapLogger.GetZapLogger(config.Confs.Debug())
+		logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
 		zapLogger.Prepare(logger).
 			Development().
 			Level(zap.ErrorLevel).

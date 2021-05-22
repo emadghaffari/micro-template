@@ -42,7 +42,7 @@ func (j *jtracer) Connect() (io.Closer, error) {
 		jaegercfg.ZipkinSharedRPCSpan(true),
 	)
 	if err != nil {
-		logger := zapLogger.GetZapLogger(config.Confs.Debug())
+		logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
 		zapLogger.Prepare(logger).Development().Level(zap.InfoLevel).Add("msg", "during Listen jaeger err").Commit(err.Error())
 
 		return nil, err

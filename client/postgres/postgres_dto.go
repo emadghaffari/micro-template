@@ -22,7 +22,7 @@ func (p *psql) Connect(cnf config.Config) error {
 			RetryStatementTimeout: true,
 		})
 		if err = p.db.Ping(context.Background()); err != nil {
-			zapLogger.Prepare(zapLogger.GetZapLogger(config.Confs.Debug())).Development().Level(zap.ErrorLevel).Commit("init configs")
+			zapLogger.Prepare(zapLogger.GetZapLogger(config.Confs.GetDebug())).Development().Level(zap.ErrorLevel).Commit("init configs")
 			return
 		}
 

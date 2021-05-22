@@ -17,6 +17,7 @@ import (
 
 func TestConnect(t *testing.T) {
 
+	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
 
@@ -28,6 +29,7 @@ func TestConnect(t *testing.T) {
 		{
 			step: "A",
 			conf: config.Config{
+				Debug: true,
 				ETCD: config.ETCD{
 					Endpoints: nil,
 					Username:  "ruser",
@@ -39,6 +41,7 @@ func TestConnect(t *testing.T) {
 		{
 			step: "B",
 			conf: config.Config{
+				Debug: true,
 				ETCD: config.ETCD{
 					Endpoints: []string{clus.Members[0].GRPCAddr()},
 					Username:  "ruser",
@@ -68,6 +71,10 @@ func TestConnect(t *testing.T) {
 }
 
 func TestGetClient(t *testing.T) {
+	integration.BeforeTest(t)
+	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
+	defer clus.Terminate(t)
+
 	c := Storage.GetClient()
 	if c == nil {
 		assert.Equal(t, c, c)
@@ -75,6 +82,7 @@ func TestGetClient(t *testing.T) {
 }
 
 func TestWatchKey(t *testing.T) {
+	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
 
@@ -93,6 +101,7 @@ func TestWatchKey(t *testing.T) {
 }
 
 func TestGetKey(t *testing.T) {
+	integration.BeforeTest(t)
 	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1, SkipCreatingClient: true})
 	defer clus.Terminate(t)
 
@@ -113,11 +122,19 @@ func TestGetKey(t *testing.T) {
 }
 
 func TestPut(t *testing.T) {
-	data := make(chan string)
+	invalidData := make(chan string)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := Storage.Put(ctx, "key2", data); err != nil {
+	if err := Storage.Put(ctx, "key2", invalidData); err != nil {
+		assert.Error(t, err, "error in put DATA")
+	}
+
+	validData := "DATA"
+	ctx2, c := context.WithTimeout(context.Background(), 30*time.Second)
+	c()
+
+	if err := Storage.Put(ctx2, "key2", validData); err != nil {
 		assert.Error(t, err, "error in put DATA")
 	}
 }

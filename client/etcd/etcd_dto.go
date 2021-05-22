@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"micro/config"
-	"micro/pkg/logger"
-	"sync"
+	zapLogger "micro/pkg/logger"
 	"time"
 
 	"go.etcd.io/etcd/api/v3/mvccpb"
@@ -14,39 +13,20 @@ import (
 	"golang.org/x/net/context"
 )
 
-var (
-	// Storage for etcd storage
-	Storage Store = &etcd{}
-	once    sync.Once
-)
-
-// Store interface
-type Store interface {
-	Connect(conf config.Config) error
-	GetClient() *client.Client
-	GetKey(ctx context.Context, key string, callBack func(*mvccpb.KeyValue), options ...client.OpOption) error
-	WatchKey(ctx context.Context, key string, callBack func(*client.Event), options ...client.OpOption)
-	Put(ctx context.Context, key string, value interface{}, options ...client.OpOption) error
-}
-
-type etcd struct {
-	cli *client.Client
-}
-
 // connect method, connect to etcd db
 func (e *etcd) Connect(conf config.Config) error {
 	var err error
 	once.Do(func() {
 		e.cli, err = client.New(client.Config{
-			Endpoints:   conf.ETCD.Endpoints,
-			Username:    conf.ETCD.Username,
-			Password:    conf.ETCD.Password,
+			Endpoints: conf.ETCD.Endpoints,
+			// Username:    conf.ETCD.Username,
+			// Password:    conf.ETCD.Password,
 			DialTimeout: 5 * time.Second,
 		})
 	})
 	if err != nil {
-		log := logger.GetZapLogger(false)
-		logger.Prepare(log).
+		log := zapLogger.GetZapLogger(conf.GetDebug())
+		zapLogger.Prepare(log).
 			Append(zap.Any("error", fmt.Sprintf("Config server error: %s", err))).
 			Level(zap.ErrorLevel).
 			Development().
@@ -93,8 +73,8 @@ func (e *etcd) GetKey(ctx context.Context, key string, callBack func(*mvccpb.Key
 func (e *etcd) Put(ctx context.Context, key string, value interface{}, options ...client.OpOption) error {
 	bts, err := json.Marshal(value)
 	if err != nil {
-		log := logger.GetZapLogger(false)
-		logger.Prepare(log).
+		log := zapLogger.GetZapLogger(config.Confs.GetDebug())
+		zapLogger.Prepare(log).
 			Append(zap.Any("error", fmt.Sprintf("Config server put error: %s", err))).
 			Append(zap.Any("key", key)).
 			Append(zap.Any("value", value)).
@@ -105,8 +85,8 @@ func (e *etcd) Put(ctx context.Context, key string, value interface{}, options .
 	}
 
 	if _, err := e.cli.Put(ctx, key, string(bts), options...); err != nil {
-		log := logger.GetZapLogger(false)
-		logger.Prepare(log).
+		log := zapLogger.GetZapLogger(config.Confs.GetDebug())
+		zapLogger.Prepare(log).
 			Append(zap.Any("error", fmt.Sprintf("Config server put error: %s", err))).
 			Append(zap.Any("key", key)).
 			Append(zap.Any("value", value)).
