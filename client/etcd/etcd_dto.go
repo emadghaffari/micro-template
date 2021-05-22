@@ -17,12 +17,15 @@ import (
 func (e *etcd) Connect(conf config.Config) error {
 	var err error
 	once.Do(func() {
-		e.cli, err = client.New(client.Config{
+		c := client.Config{
 			Endpoints:   conf.ETCD.Endpoints,
-			Username:    conf.ETCD.Username,
-			Password:    conf.ETCD.Password,
 			DialTimeout: 5 * time.Second,
-		})
+		}
+		if !conf.Get().Debug {
+			c.Username = conf.ETCD.Username
+			c.Password = conf.ETCD.Password
+		}
+		e.cli, err = client.New(c)
 	})
 	if err != nil {
 		log := zapLogger.GetZapLogger(conf.GetDebug())
