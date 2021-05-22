@@ -13,7 +13,7 @@ import (
 // Set method
 // you can set new key in switch for manage config with config server
 func (g *Config) Set(key string, query []byte) error {
-	logger := zapLogger.GetZapLogger(g.Debug())
+	logger := zapLogger.GetZapLogger(g.GetDebug())
 	if err := json.Unmarshal(query, &Confs); err != nil {
 		zapLogger.Prepare(logger).
 			Append(zap.Any("key", key)).
@@ -53,8 +53,12 @@ func (g *Config) GetService() interface{} {
 	return service
 }
 
-func (g *Config) Debug() bool {
-	return g.Get().Environment != "production"
+func (g *Config) GetDebug() bool {
+	return g.Get().Debug
+}
+
+func (g *Config) SetDebug(debug bool) {
+	g.Debug = debug
 }
 
 // Load returns configs
