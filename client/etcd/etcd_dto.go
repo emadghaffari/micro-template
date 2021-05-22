@@ -15,6 +15,8 @@ import (
 
 // connect method, connect to etcd db
 func (e *etcd) Connect(conf config.Config) error {
+	log := zapLogger.GetZapLogger(conf.GetDebug())
+
 	var err error
 	once.Do(func() {
 		c := client.Config{
@@ -24,11 +26,11 @@ func (e *etcd) Connect(conf config.Config) error {
 		if !conf.Get().Debug {
 			c.Username = conf.ETCD.Username
 			c.Password = conf.ETCD.Password
+			c.Logger = log
 		}
 		e.cli, err = client.New(c)
 	})
 	if err != nil {
-		log := zapLogger.GetZapLogger(conf.GetDebug())
 		zapLogger.Prepare(log).
 			Append(zap.Any("error", fmt.Sprintf("Config server error: %s", err))).
 			Level(zap.ErrorLevel).
