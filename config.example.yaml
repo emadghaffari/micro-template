@@ -1,5 +1,3 @@
-# environment: "development"
-environment: "production"
 
 ##########################################################################
 #                                                                        #
@@ -7,6 +5,9 @@ environment: "production"
 #               For Further information, please check README             #
 #                                                                        #
 ##########################################################################
+
+# mode: if mode true: we in production
+# if mode false we in debug
 
 service:
   name: "template"
