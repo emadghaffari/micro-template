@@ -27,7 +27,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/spf13/viper"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
@@ -58,7 +57,7 @@ func (a *App) StartApplication() {
 	}
 	defer closer.Close()
 
-	if viper.GetString("environment") == "production" {
+	if !config.Confs.GetDebug() {
 		if err := a.initConfigServer(); err != nil {
 			fmt.Println(err.Error())
 		}
@@ -177,13 +176,18 @@ func (a *App) initJaeger() (io.Closer, error) {
 }
 
 // in production you load envs from etcd storage
-// you can change, add or delete watch keys
-// watches example: key: redis - value: {"password":"****","address":"***:6985","db":"0",....}
 func (a *App) initConfigServer() error {
 	defer fmt.Printf("etcd storage loaded successfully \n")
 	if err := etcd.Storage.Connect(config.Confs.Get()); err != nil {
 		return err
 	}
+
+	// get watch list for this service with service ID
+	etcd.Storage.GetKey(context.Background(), config.Confs.Get().Service.ID, func(kv *mvccpb.KeyValue) {
+		// set configs from storage to struct - if exists in Set method
+		config.Confs.Set(string(kv.Key), kv.Value)
+
+	}, clientv3.WithPrefix())
 
 	// loop over watchList
 	for _, key := range config.Confs.Get().ETCD.WatchList {
@@ -207,8 +211,7 @@ func (a *App) initConfigServer() error {
 		}, clientv3.WithPrefix())
 	}
 
-	// apply service discovery - put service details
-	return etcd.Storage.Put(context.Background(), config.Confs.Get().Service.Name, config.Confs.GetService())
+	return nil
 }
 
 // init message broker
