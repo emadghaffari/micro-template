@@ -4,4 +4,11 @@ package proto;
 
 option go_package = "proto/;proto";
 
-service Auth {}
+service Auth {
+    rpc Test (Micro) returns (Micro);
+}
+
+
+message Micro {
+    string id = 1;
+}
