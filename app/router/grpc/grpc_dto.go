@@ -45,9 +45,10 @@ func (a *micro) defaultGRPCOptions(logger *zap.Logger, tracer opentracing.Tracer
 	),
 	))
 
-	options = append(options, grpc.StreamInterceptor(
+	options = append(options, grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 		grpc_auth.StreamServerInterceptor(middleware.M.JWT),
-	))
+		otgrpc.OpenTracingStreamServerInterceptor(tracer, otgrpc.LogPayloads()),
+	)))
 
 	return options
 }
