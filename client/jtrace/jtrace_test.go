@@ -105,7 +105,7 @@ func TestContextWithSpan(t *testing.T) {
 	span := Tracer.StartSpan("test")
 
 	// should not use built-in type string as key for value; define your own type to avoid collisions
-	ctx := context.WithValue(context.Background(), "span", span)
+	ctx := context.WithValue(context.Background(), Span, span)
 	Tracer.ContextWithSpan(ctx, span)
 
 	Tracer.ContextWithSpan(context.Background(), span)

@@ -84,7 +84,7 @@ func (j *jtracer) StartSpan(str string) opentracing.Span {
 
 // ContextWithSpan methd
 func (j *jtracer) ContextWithSpan(ctx context.Context, span opentracing.Span) context.Context {
-	if qr := ctx.Value("span"); qr != nil {
+	if qr := ctx.Value(Span); qr != nil {
 		ctx := context.Background()
 		return opentracing.ContextWithSpan(ctx, span)
 	}

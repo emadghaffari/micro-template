@@ -9,10 +9,13 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
+type tracing string
+
 var (
 	tracer opentracing.Tracer
 	Tracer itracer = &jtracer{}
 	once   sync.Once
+	Span   tracing = "span"
 )
 
 type itracer interface {
