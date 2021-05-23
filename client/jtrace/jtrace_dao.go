@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"micro/config"
+	"sync"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -11,6 +12,7 @@ import (
 var (
 	tracer opentracing.Tracer
 	Tracer itracer = &jtracer{}
+	once   sync.Once
 )
 
 type itracer interface {

@@ -16,41 +16,44 @@ import (
 
 // Connect method
 func (j *jtracer) Connect(confs config.Config) (io.Closer, error) {
-	// Sample configuration for testing. Use constant sampling to sample every trace
-	// and enable LogSpan to log every span via configured Logger.
-	cfg := jaegercfg.Configuration{
-		ServiceName: confs.Service.Name,
-		Sampler: &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
-			Param: 1,
-		},
-		Reporter: &jaegercfg.ReporterConfig{
-			LogSpans:           confs.Jaeger.LogSpans,
-			LocalAgentHostPort: confs.Jaeger.HostPort,
-		},
-	}
-
-	jLogger := jaegerlog.StdLogger
-	jMetricsFactory := metrics.NullFactory
-
 	// Initialize tracer with a logger and a metrics factory
 	var closer io.Closer
 	var err error
-	tracer, closer, err = cfg.NewTracer(
-		jaegercfg.Logger(jLogger),
-		jaegercfg.Metrics(jMetricsFactory),
-		jaegercfg.ZipkinSharedRPCSpan(true),
-	)
-	if err != nil {
-		logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
-		zapLogger.Prepare(logger).Development().Level(zap.InfoLevel).Add("msg", "during Listen jaeger err").Commit(err.Error())
 
-		return nil, err
-	}
+	once.Do(func() {
+		// Sample configuration for testing. Use constant sampling to sample every trace
+		// and enable LogSpan to log every span via  configured Logger.
+		cfg := jaegercfg.Configuration{
+			ServiceName: confs.Service.Name,
+			Sampler: &jaegercfg.SamplerConfig{
+				Type:  jaeger.SamplerTypeConst,
+				Param: 1,
+			},
+			Reporter: &jaegercfg.ReporterConfig{
+				LogSpans:           confs.Jaeger.LogSpans,
+				LocalAgentHostPort: confs.Jaeger.HostPort,
+			},
+		}
 
-	opentracing.SetGlobalTracer(tracer)
+		jLogger := jaegerlog.StdLogger
+		jMetricsFactory := metrics.NullFactory
 
-	return closer, nil
+		tracer, closer, err = cfg.NewTracer(
+			jaegercfg.Logger(jLogger),
+			jaegercfg.Metrics(jMetricsFactory),
+			jaegercfg.ZipkinSharedRPCSpan(true),
+		)
+
+		if err != nil {
+			logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
+			zapLogger.Prepare(logger).Development().Level(zap.InfoLevel).Add("msg", "during Listen jaeger err").Commit(err.Error())
+			return
+		}
+
+		opentracing.SetGlobalTracer(tracer)
+	})
+
+	return closer, err
 }
 
 // GetTracer method
