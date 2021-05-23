@@ -3,6 +3,7 @@ package jtrace
 import (
 	"context"
 	"io"
+	"micro/config"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -13,7 +14,7 @@ var (
 )
 
 type itracer interface {
-	Connect() (io.Closer, error)
+	Connect(config.Config) (io.Closer, error)
 	GetTracer() opentracing.Tracer
 	FromContext(ctx context.Context, startName string) opentracing.Span
 	StartSpan(str string) opentracing.Span

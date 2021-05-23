@@ -148,7 +148,7 @@ func (a *App) initCancelInterrupt(g *group.Group) {
 
 // init jaeger tracer
 func (a *App) initJaeger() (io.Closer, error) {
-	closer, err := jtrace.Tracer.Connect()
+	closer, err := jtrace.Tracer.Connect(config.Confs.Get())
 	if err != nil {
 		return nil, err
 	}

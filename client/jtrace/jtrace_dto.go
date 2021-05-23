@@ -15,18 +15,18 @@ import (
 )
 
 // Connect method
-func (j *jtracer) Connect() (io.Closer, error) {
+func (j *jtracer) Connect(confs config.Config) (io.Closer, error) {
 	// Sample configuration for testing. Use constant sampling to sample every trace
 	// and enable LogSpan to log every span via configured Logger.
 	cfg := jaegercfg.Configuration{
-		ServiceName: config.Confs.Get().Service.Name,
+		ServiceName: confs.Service.Name,
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
 			Param: 1,
 		},
 		Reporter: &jaegercfg.ReporterConfig{
-			LogSpans:           config.Confs.Get().Jaeger.LogSpans,
-			LocalAgentHostPort: config.Confs.Get().Jaeger.HostPort,
+			LogSpans:           confs.Jaeger.LogSpans,
+			LocalAgentHostPort: confs.Jaeger.HostPort,
 		},
 	}
 
