@@ -34,6 +34,8 @@ func (g micro) GetRouter() *grpc.Server {
 
 // defaultGRPCOptions
 // add options for grpc connection
+// In order to enable tracing of both upstream and downstream requests of the gRPC service, the gRPC client must also be initialized with client-side opentracing interceptor
+// The parent spans created by the gRPC middleware are injected to the go context
 func (a *micro) defaultGRPCOptions(logger *zap.Logger, tracer opentracing.Tracer) []grpc.ServerOption {
 	options := []grpc.ServerOption{}
 
