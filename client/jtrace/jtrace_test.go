@@ -71,8 +71,6 @@ func TestConnect(t *testing.T) {
 				assert.Equal(t, tc.err.Error(), err.Error())
 				return
 			}
-			// closer.Close()
-
 		})
 	}
 }
