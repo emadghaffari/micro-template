@@ -2,11 +2,6 @@ package grpc
 
 import (
 	"micro/app/router/middleware"
-	"micro/client/jtrace"
-	"micro/config"
-	controller "micro/controller/grpc"
-	zapLogger "micro/pkg/logger"
-	pb "micro/proto"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -15,21 +10,21 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 func (g micro) GetRouter() *grpc.Server {
-	logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
-	options := g.defaultGRPCOptions(logger, jtrace.Tracer.GetTracer())
+	// logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
+	// options := g.defaultGRPCOptions(logger, jtrace.Tracer.GetTracer())
 
-	baseServer := grpc.NewServer(options...)
+	// baseServer := grpc.NewServer(options...)
 
-	// reflection for evans
-	reflection.Register(baseServer)
+	// // reflection for evans
+	// reflection.Register(baseServer)
 
-	pb.RegisterAuthServer(baseServer, new(controller.Micro))
+	// pb.RegisterAuthServer(baseServer, new(controller.Micro))
 
-	return baseServer
+	// return baseServer
+	return nil
 }
 
 // defaultGRPCOptions

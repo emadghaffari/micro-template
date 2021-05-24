@@ -2,8 +2,7 @@
 GOPATH:=$(shell go env GOPATH)
 .PHONY: proto
 proto:
-	# protoc --proto_path=. --go_out=plugins=grpc:. proto/*.proto
-	protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=require_unimplemented_servers=false     proto/*.proto
+	protoc -I proto --go_out proto --go_opt paths=source_relative --go-grpc_out proto --go-grpc_opt paths=source_relative --grpc-gateway_out proto --grpc-gateway_opt paths=source_relative proto/pb/*.proto
 
 .PHONY: build
 build:
