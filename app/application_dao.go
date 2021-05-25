@@ -17,8 +17,7 @@ type Application interface {
 	StartApplication()
 	initLogger()
 	initConfigs() error
-	initGRPCHandler(g *group.Group)
-	initHTTPEndpoint(g *group.Group)
+	initRouterHandler(g *group.Group)
 	initCancelInterrupt(g *group.Group)
 	initJaeger() (io.Closer, error)
 	initConfigServer() error

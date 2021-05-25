@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"micro/app/router/grpc"
-	router "micro/app/router/http"
+	"micro/app/router"
 	"micro/client/broker"
 	"micro/client/etcd"
 	"micro/client/jtrace"
@@ -14,7 +13,6 @@ import (
 	"micro/client/redis"
 	"micro/config"
 	zapLogger "micro/pkg/logger"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -100,33 +98,13 @@ func (a *App) initConfigs() error {
 }
 
 // init grpc connection
-func (a *App) initGRPCHandler(g *group.Group) {
-	defer fmt.Printf("grpc connected port:%s \n", config.Confs.Get().Service.GRPC.Port)
-
-	lis, err := net.Listen("tcp", config.Confs.Get().Service.GRPC.Port)
-	if err != nil {
-		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit(err.Error())
-	}
+func (a *App) initRouterHandler(g *group.Group) {
+	defer fmt.Printf("router connected ports[GRPC:%s,HTTP:%s] \n", config.Confs.Get().Service.GRPC.Port, config.Confs.Get().Service.HTTP.Port)
 
 	g.Add(func() error {
-		return grpc.Router.GetRouter().Serve(lis)
+		return router.Router.GetRouter()
 	}, func(error) {
-		lis.Close()
 	})
-}
-
-// init HTTP Endpoint
-// add rest endpoints
-func (a *App) initHTTPEndpoint(g *group.Group) {
-	defer fmt.Printf("metrics started port:%s \n", config.Confs.Get().Service.HTTP.Port)
-
-	g.Add(func() error {
-		if err := router.Router.GetRouter().Run(config.Confs.Get().Service.HTTP.Port); err != nil {
-			zapLogger.Prepare(logger).Development().Level(zap.InfoLevel).Add("msg", "transport debug/HTTP during Listen err").Commit(err.Error())
-			return err
-		}
-		return nil
-	}, func(error) {})
 }
 
 // init cancle Interrupt
@@ -230,10 +208,7 @@ func (a *App) createService() (g *group.Group) {
 	g = &group.Group{}
 
 	// init GRPC Handlers
-	Base.initGRPCHandler(g)
-
-	// init http endpoints
-	Base.initHTTPEndpoint(g)
+	Base.initRouterHandler(g)
 
 	// init cancel
 	Base.initCancelInterrupt(g)
