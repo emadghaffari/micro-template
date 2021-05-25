@@ -115,5 +115,5 @@ func (a *micro) dialOptions() []grpc.DialOption {
 // HandleFuncs method for handler your basci methods
 func (a *micro) HandleFuncs(mux *http.ServeMux) {
 	mux.HandleFunc("/metrics", controller.M.Metrics)
-	mux.HandleFunc("/health", controller.M.Health)
+	mux.Handle("/health", middleware.M.MiddlewareExample(http.HandlerFunc(controller.M.Health)))
 }
