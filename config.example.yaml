@@ -22,13 +22,6 @@ service:
     host: "localhost"
     port: ":8080"
     requestTimeout: 32
-  routes:
-    - URL: "metrics/"
-      Name: "metrics"
-      Description: "check middleware"
-      Method: GET
-      MaxAllowedAnomaly: 100
-      Middleware:
 
 ##########################################################################
 #                                                                        #
