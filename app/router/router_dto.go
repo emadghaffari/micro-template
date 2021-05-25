@@ -27,16 +27,19 @@ import (
 func (g micro) GetRouter() error {
 	logger := zapLogger.GetZapLogger(config.Confs.GetDebug())
 
+	// net listen for grpc port
 	lis, err := net.Listen("tcp", config.Confs.Get().Service.GRPC.Port)
 	if err != nil {
 		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit(err.Error())
 	}
 
+	// start new server
 	baseServer := grpc.NewServer(Router.serverOptions(logger, jtrace.Tracer.GetTracer())...)
 
 	// reflection for evans
 	reflection.Register(baseServer)
 
+	// register{MICRO}service
 	pb.RegisterMicroServer(baseServer, &controller.Micro{})
 	go func() {
 		log.Fatalln(baseServer.Serve(lis))
@@ -51,14 +54,17 @@ func (g micro) GetRouter() error {
 		return err
 	}
 
+	// new server from http package
 	mux := http.NewServeMux()
 	gwmux := runtime.NewServeMux()
 
+	// register handler
 	if err := pb.RegisterMicroHandler(context.Background(), gwmux, conn); err != nil {
 		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit(fmt.Sprintf("Failed to register gateway: %s", err.Error()))
 		return err
 	}
 
+	// handle methods
 	mux.Handle("/", gwmux)
 	Router.HandleFuncs(mux)
 
@@ -96,6 +102,7 @@ func (a *micro) serverOptions(logger *zap.Logger, tracer opentracing.Tracer) []g
 	return options
 }
 
+// dialOptions, options for dial connections
 func (a *micro) dialOptions() []grpc.DialOption {
 	options := []grpc.DialOption{}
 
@@ -105,6 +112,7 @@ func (a *micro) dialOptions() []grpc.DialOption {
 	return options
 }
 
+// HandleFuncs method for handler your basci methods
 func (a *micro) HandleFuncs(mux *http.ServeMux) {
 	mux.HandleFunc("/metrics", controller.M.Metrics)
 	mux.HandleFunc("/health", controller.M.Health)
