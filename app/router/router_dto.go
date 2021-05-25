@@ -91,8 +91,7 @@ func (a *micro) serverOptions(logger *zap.Logger, tracer opentracing.Tracer) []g
 		otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
 		grpc_auth.UnaryServerInterceptor(middleware.M.JWT),
 		grpc_prometheus.UnaryServerInterceptor,
-	),
-	))
+	)))
 
 	options = append(options, grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 		grpc_auth.StreamServerInterceptor(middleware.M.JWT),
