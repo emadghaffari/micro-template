@@ -15,6 +15,13 @@ service Micro {
       body: "*"
     };
   }
+  // Sends a greeting
+  rpc Search (SearchRequest) returns (stream SearchResponse) {
+    option (google.api.http) = {
+      post: "/v1/example/search"
+      body: "*"
+    };
+  }
 }
 
 // The request message containing the user's name
@@ -25,4 +32,13 @@ message HelloRequest {
 // The response message containing the greetings
 message HelloReply {
   string message = 1;
+}
+
+
+message SearchRequest {
+  string name = 1 ;
+}
+
+message SearchResponse {
+  string name = 1;
 }

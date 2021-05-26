@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type MicroClient interface {
 	// Sends a greeting
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	// Sends a greeting
+	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (Micro_SearchClient, error)
 }
 
 type microClient struct {
@@ -39,12 +41,46 @@ func (c *microClient) SayHello(ctx context.Context, in *HelloRequest, opts ...gr
 	return out, nil
 }
 
+func (c *microClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (Micro_SearchClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Micro_ServiceDesc.Streams[0], "/pb.Micro/Search", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &microSearchClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Micro_SearchClient interface {
+	Recv() (*SearchResponse, error)
+	grpc.ClientStream
+}
+
+type microSearchClient struct {
+	grpc.ClientStream
+}
+
+func (x *microSearchClient) Recv() (*SearchResponse, error) {
+	m := new(SearchResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // MicroServer is the server API for Micro service.
 // All implementations must embed UnimplementedMicroServer
 // for forward compatibility
 type MicroServer interface {
 	// Sends a greeting
 	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	// Sends a greeting
+	Search(*SearchRequest, Micro_SearchServer) error
 	mustEmbedUnimplementedMicroServer()
 }
 
@@ -54,6 +90,9 @@ type UnimplementedMicroServer struct {
 
 func (UnimplementedMicroServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
+func (UnimplementedMicroServer) Search(*SearchRequest, Micro_SearchServer) error {
+	return status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
 func (UnimplementedMicroServer) mustEmbedUnimplementedMicroServer() {}
 
@@ -86,6 +125,27 @@ func _Micro_SayHello_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Micro_Search_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SearchRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(MicroServer).Search(m, &microSearchServer{stream})
+}
+
+type Micro_SearchServer interface {
+	Send(*SearchResponse) error
+	grpc.ServerStream
+}
+
+type microSearchServer struct {
+	grpc.ServerStream
+}
+
+func (x *microSearchServer) Send(m *SearchResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Micro_ServiceDesc is the grpc.ServiceDesc for Micro service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +158,12 @@ var Micro_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Micro_SayHello_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Search",
+			Handler:       _Micro_Search_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "pb/micro.proto",
 }
