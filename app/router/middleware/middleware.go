@@ -69,6 +69,8 @@ func (m *middle) assignMiddleware(ctx context.Context, req interface{}, middlewa
 func (m *middle) CheckSome(ctx context.Context, req interface{}) error {
 	fmt.Println(ctx, req)
 	fmt.Println("CheckSome")
+
+	return nil
 }
 
 func (m *middle) MiddlewareExample(next http.Handler) http.Handler {
