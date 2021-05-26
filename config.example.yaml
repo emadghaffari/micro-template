@@ -22,7 +22,28 @@ service:
     host: "localhost"
     port: ":8080"
     requestTimeout: 32
-
+  router:
+    - method: /pb.Micro/SayHelloxx
+      description: "for say hello to my master!"
+      maxAllowedAnomaly: 50
+      middlewares:
+        - CheckSome
+        - checkSome
+        - middleware3
+    - method: /pb.Micro/SayHello
+      description: "for say hello to my master!"
+      maxAllowedAnomaly: 50
+      middlewares:
+        - CheckSome
+        - checkSome
+        - middleware3
+    - method: /SayHello
+      description: "for say hello to my master!"
+      maxAllowedAnomaly: 50
+      middlewares:
+        - CheckSome
+        - checkSome
+        - middleware3
 ##########################################################################
 #                                                                        #
 #                         Server Config Part                             #

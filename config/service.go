@@ -16,13 +16,12 @@ type Service struct {
 		Port           string `yaml:"http.port"`
 		RequestTimeout string `yaml:"http.requestTimeout"`
 	}
-	Router []Router `yaml:"service.router"`
+	Router []Router `yaml:"service.routers"`
 }
 
 type Router struct {
-	Name              string   `yaml:"Name"`
-	Method            string   `yaml:"Method"`
-	URL               string   `yaml:"URL"`
-	MaxAllowedAnomaly float32  `yaml:"MaxAllowedAnomaly"`
-	Middlewares       []string `yaml:"Middleware"`
+	Description       string   `yaml:"description"`
+	Method            string   `yaml:"method"`
+	MaxAllowedAnomaly float32  `yaml:"maxAllowedAnomaly"`
+	Middlewares       []string `yaml:"middlewares"`
 }
