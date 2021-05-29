@@ -89,14 +89,16 @@ func (a *micro) serverOptions(logger *zap.Logger, tracer opentracing.Tracer) []g
 	// UnaryInterceptor and OpenTracingServerInterceptor for tracer
 	options = append(options, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 		otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
-		grpc_auth.UnaryServerInterceptor(middleware.M.JWT),
+		grpc_auth.UnaryServerInterceptor(middleware.M.JWT), // middleware for all routes example
 		grpc_prometheus.UnaryServerInterceptor,
-		middleware.UnaryInterceptor,
+		middleware.M.MiddlewareUnaryInterceptor, // middleware for specific methods
 	)))
 
 	options = append(options, grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
-		grpc_auth.StreamServerInterceptor(middleware.M.JWT),
+		grpc_auth.StreamServerInterceptor(middleware.M.JWT), // middleware for all routes example
 		otgrpc.OpenTracingStreamServerInterceptor(tracer, otgrpc.LogPayloads()),
+		middleware.M.MiddlewareStreamInterceptor, // middleware for specific methods
+
 	)))
 
 	return options
