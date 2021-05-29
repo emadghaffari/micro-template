@@ -31,44 +31,44 @@ func (a *App) StartApplication() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// init zap logger
-	a.initLogger()
+	Base.initLogger()
 
 	// init configs
-	if err := a.initConfigs(); err != nil {
+	if err := Base.initConfigs(); err != nil {
 		return
 	}
 
 	//  Determine which tracer to use. We'll pass the tracer to all the
 	// components that use it, as a dependency
-	closer, err := a.initJaeger()
+	closer, err := Base.initJaeger()
 	if err != nil {
 		return
 	}
 	defer closer.Close()
 
 	if !config.Confs.GetDebug() {
-		if err := a.initConfigServer(); err != nil {
+		if err := Base.initConfigServer(); err != nil {
 			fmt.Println(err.Error())
 		}
 		defer etcd.Storage.GetClient().Close()
 	}
 
-	if err := a.initRedis(); err != nil {
+	if err := Base.initRedis(); err != nil {
 		return
 	}
 
-	if err := a.initPostgres(); err != nil {
+	if err := Base.initPostgres(); err != nil {
 		return
 	}
 	defer postgres.Storage.Get().Close()
 
-	if err := a.initMessageBroker(); err != nil {
+	if err := Base.initMessageBroker(); err != nil {
 		return
 	}
 	defer broker.Nats.Conn().Close()
 
 	// create service
-	g := a.createService()
+	g := Base.createService()
 	fmt.Printf("--------------------------------\n\n")
 	if err := g.Run(); err != nil {
 		zapLogger.Prepare(logger).Development().Level(zap.ErrorLevel).Commit("server stopped")
