@@ -21,5 +21,5 @@ in this method we check middlewares for streaming requests
 
 
 ### new method
-1- create a method [http-unary,streaming] type
+1- create a method [http, unary, streaming] type \br
 2- use method in your config
