@@ -2,8 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"micro/config"
 	"net/http"
 	"reflect"
@@ -20,20 +18,15 @@ type Middleware interface {
 	JWT(ctx context.Context) (context.Context, error)
 	MiddlewareExample(next http.Handler) http.Handler
 	assignMiddleware(ctx context.Context, req interface{}, middlewares []string) error
+	MiddlewareUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error)
+	MiddlewareStreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error
 }
 
 // middle struct
 type middle struct{}
 
-// JWT method
-func (m *middle) JWT(ctx context.Context) (context.Context, error) {
-	log.Println("Executing GRPC MiddlewareExample")
-	return ctx, nil
-}
+func (m *middle) MiddlewareUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 
-func UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	//skip auth when ListReleases requested
-	fmt.Println("=====================")
 	// loop for all routes we have in config file
 	for _, r := range config.Confs.Get().Service.Router {
 		// if method name != proto rpc name, then go to next method
@@ -44,38 +37,35 @@ func UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 			return nil, err
 		}
 	}
-	fmt.Println("=====================")
 
 	h, err := handler(ctx, req)
 
 	return h, err
 }
 
+// MiddlewareStreamInterceptor in thos middleware you can check
+// server streaming, client streaming in info
+func (m *middle) MiddlewareStreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return nil
+}
+
 func (m *middle) assignMiddleware(ctx context.Context, req interface{}, middlewares []string) error {
+
+	// loop middlewares for every route
 	for _, m := range middlewares {
+
+		// get middleware methods by name
 		method := reflect.ValueOf(&middle{}).MethodByName(m)
 		if !method.IsValid() {
 			continue
 		}
-		// FIXME
-		// fix the return from method call,
-		// we need to check errors for middlewares
-		method.Call([]reflect.Value{reflect.ValueOf(ctx), reflect.ValueOf(req)})
+
+		// check every middleware for method
+		responses := method.Call([]reflect.Value{reflect.ValueOf(ctx), reflect.ValueOf(req)})
+		if err := responses[0].Interface(); err != nil {
+			return err.(error)
+		}
 	}
 
 	return nil
-}
-
-func (m *middle) CheckSome(ctx context.Context, req interface{}) error {
-	fmt.Println(ctx, req)
-	fmt.Println("CheckSome")
-
-	return nil
-}
-
-func (m *middle) MiddlewareExample(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Executing HTTP MiddlewareExample")
-		next.ServeHTTP(w, r)
-	})
 }
